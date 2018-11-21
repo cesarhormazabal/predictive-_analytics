@@ -1,0 +1,65 @@
+---
+title: "Caret Básico"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r setup librerias a usar}
+library(caret)
+library(tidyverse)
+library(rpart)
+library(e1071)
+library(ranger)
+```
+
+```{r carga de data}
+data_banco <- read.csv("https://raw.githubusercontent.com/cesarhormazabal/predictive-_analytics/master/Marketing%20Laboral/bank-full.csv", sep=";")
+head(data_banco)
+```
+
+
+
+```{r asegurar estructura adecuada}
+str(data_banco)
+```
+
+
+
+```{r separar en entrenamiento y validacion}
+train_index <- createDataPartition(data_banco$y,
+                                   p = 0.8,
+                                   list = FALSE,
+                                   times = 1)
+banco_entrenamiento<-data_banco[train_index,]
+banco_validacion<-data_banco[-train_index,]
+```
+
+
+
+```{r entrenar y verificar errores}
+rf_fit <- train(y ~ ., 
+                data = banco_entrenamiento, 
+                method = "rpart")
+rf_fit
+```
+
+```{r predecir  y matriz confusión}
+predicciones<-predict(rf_fit,banco_validacion)
+
+caret::confusionMatrix(predicciones,banco_validacion$y)
+
+```
+
+Podríamos haber pre-procesado la data
+
+```{r predecir  Pre-procesar}
+data_banco%>%
+  select(-y)%>%
+  nearZeroVar()->c.casi.cero.var
+
+colnames(data_banco)[c.casi.cero.var]
+```
