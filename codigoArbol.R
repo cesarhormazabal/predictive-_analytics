@@ -177,6 +177,28 @@ rf_fit.busqueda.parametros <- train(y ~ .,
                                   method = "rpart",
                                   trControl=train_control)
 
+prediccion.arbol.parametros<-predict(rf_fit.busqueda.parametros,banco_validacion,type="prob")
+
+#Data necesaria para generar la curva ROC
+rocdata.arbol.param<- data.frame(
+  D = banco_validacion$y
+  ,M = prediccion.arbol.parametros[,"yes"]
+  , Z = rep("Arbol Parametros",dim(banco_validacion)[1])
+)
+
+#Unir con los otros modelos para comparar
+rocdata<-bind_rows(rocdata.arbol,
+                   rocdata.bosque,
+                   rocdata.arbol.2,
+                   rocdata.arbol.param)
+
+#Gráfico
+roc<-ggplot(rocdata, aes(m = M, d = D,color=Z)) + geom_roc()
+
+x11()
+roc
+
+
 #Agregamos un naive bayes
 
 nb.busqueda.parametros <- train(y ~ ., 
@@ -185,5 +207,52 @@ nb.busqueda.parametros <- train(y ~ .,
                                     trControl=train_control)
 
 
+prediccion.nb<-predict(nb.busqueda.parametros,banco_validacion,type="prob")
 
 
+
+#Data necesaria para generar la curva ROC
+rocdata.nb<- data.frame(
+  D = banco_validacion$y
+  ,M = prediccion.nb[,"yes"]
+  , Z = rep("Naive Bayes",dim(banco_validacion)[1])
+)
+
+#Unir con los otros modelos para comparar
+rocdata<-bind_rows(rocdata.arbol,
+                   rocdata.bosque,
+                   rocdata.arbol.2,
+                   rocdata.arbol.param,
+                   rocdata.nb)
+#Gráfico
+roc<-ggplot(rocdata, aes(m = M, d = D,color=Z)) + geom_roc()
+
+x11()
+roc
+
+logit <-train(y ~ .,  data = banco_entrenamiento, 
+                              method = "glm",
+                             family=binomial)
+
+
+
+prediccion.logit<-predict(logit,banco_validacion,type="prob")
+
+
+
+#Data necesaria para generar la curva ROC
+rocdata.logit<- data.frame(
+  D = banco_validacion$y
+  ,M = prediccion.nb[,"yes"]
+  , Z = rep("Logit",dim(banco_validacion)[1])
+)
+
+#Unir con los otros modelos para comparar
+rocdata<-bind_rows(rocdata.bosque,
+                   rocdata.nb,
+                   rocdata.logit)
+#Gráfico
+roc<-ggplot(rocdata, aes(m = M, d = D,color=Z)) + geom_roc()
+
+x11()
+roc
