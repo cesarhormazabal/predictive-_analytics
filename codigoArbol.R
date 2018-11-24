@@ -137,6 +137,7 @@ objeto.modelo.entrenado<-train(formula,data)
 
 predict(objeto.modelo.entrenado,nuevadata)
 
+
 #Entrenamiento de data (árbol con riesgo de sobreajuste)
 fit3 <- rpart(y ~ .,
               data = banco_entrenamiento, 
@@ -165,3 +166,24 @@ roc<-ggplot(rocdata, aes(m = M, d = D,color=Z)) + geom_roc()
 
 x11()
 roc
+
+#Agregamos un modo de control
+
+train_control <- trainControl(method="repeatedcv", 
+                              number=10, repeats=5)
+
+rf_fit.busqueda.parametros <- train(y ~ ., 
+                                  data = banco_entrenamiento, 
+                                  method = "rpart",
+                                  trControl=train_control)
+
+#Agregamos un naive bayes
+
+nb.busqueda.parametros <- train(y ~ ., 
+                                    data = banco_entrenamiento, 
+                                    method = "nb",
+                                    trControl=train_control)
+
+
+
+
